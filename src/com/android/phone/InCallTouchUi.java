@@ -83,6 +83,7 @@ public class InCallTouchUi extends FrameLayout
 
     // UI containers / elements
     private GlowPadView mIncomingCallWidget;  // UI used for an incoming call
+    private FrameLayout mIncomingCallWidgetFramelayout;
     private boolean mIncomingCallWidgetIsFadingOut;
     private boolean mIncomingCallWidgetShouldBeReset = true;
 
@@ -101,7 +102,6 @@ public class InCallTouchUi extends FrameLayout
     private ImageButton mSwapButton;
     private ImageButton mAddBlacklistButton;
     private View mHoldSwapSpacer;
-    private View mBlacklistSpacer;
 
     // "Extra button row"
     private ViewStub mExtraButtonRow;
@@ -165,6 +165,9 @@ public class InCallTouchUi extends FrameLayout
         mIncomingCallWidget = (GlowPadView) findViewById(R.id.incomingCallWidget);
         mIncomingCallWidget.setOnTriggerListener(this);
 
+        // Get framelayout for background changes @transparent ui incall screen
+        mIncomingCallWidgetFramelayout = (FrameLayout) findViewById(R.id.incomingCallWidgetFrameLayout);
+
         // Container for the UI elements shown while on a regular call.
         mInCallControls = findViewById(R.id.inCallControls);
 
@@ -194,7 +197,6 @@ public class InCallTouchUi extends FrameLayout
         mSwapButton.setOnClickListener(this);
         mSwapButton.setOnLongClickListener(this);
         mHoldSwapSpacer = mInCallControls.findViewById(R.id.holdSwapSpacer);
-        mBlacklistSpacer = mInCallControls.findViewById(R.id.blacklistSpacer);
 
         // Blacklist functionality
         mAddBlacklistButton = (ImageButton) mInCallControls.findViewById(R.id.addBlacklistButton);
@@ -557,7 +559,6 @@ public class InCallTouchUi extends FrameLayout
             boolean visible = BlacklistUtils.isBlacklistEnabled(getContext()) &&
                     inCallControlState.canBlacklistCall;
             mAddBlacklistButton.setVisibility(visible ? View.VISIBLE : View.GONE);
-            mBlacklistSpacer.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
 
         // "Hold" / "Swap":
@@ -1026,6 +1027,10 @@ public class InCallTouchUi extends FrameLayout
 
     }
 
+    public void onTargetChange(View v, int whichHandle) {
+
+    }
+
     /**
      * Handles "Answer" and "Reject" actions for an incoming call.
      * We get this callback from the incoming call widget
@@ -1191,6 +1196,14 @@ public class InCallTouchUi extends FrameLayout
             mIncomingCallWidgetIsFadingOut = false;
         }
         mIncomingCallWidget.setAlpha(1.0f);
+
+        if (mIncomingCallWidgetFramelayout != null) {
+            if (PhoneUtils.PhoneSettings.transparentInCallWidget(this.getContext())) {
+                mIncomingCallWidgetFramelayout.setBackgroundResource(android.R.color.transparent);
+            } else {
+                mIncomingCallWidgetFramelayout.setBackgroundResource(R.color.incall_call_banner_background);
+            }
+        }
 
         // Update the GlowPadView widget's targets based on the state of
         // the ringing call.  (Specifically, we need to disable the
